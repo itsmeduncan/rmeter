@@ -1,6 +1,8 @@
-require 'sinatra/base'
-require 'haml'
 require 'rmeter/version'
+
+require 'active_support/json'
+require 'haml'
+require 'sinatra/base'
 require 'time'
 
 module Rmeter
@@ -14,7 +16,7 @@ module Rmeter
 
     get "/" do
       files = Dir[File.join(settings.data, '*')]
-      results = files.collect { |f| Rmeter::Parser.new(f) }
+      results = files.collect { |f| Rmeter::Parser.new(f).parse.to_json }
 
       haml :index
     end

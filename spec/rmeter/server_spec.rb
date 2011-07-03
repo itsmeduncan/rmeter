@@ -11,7 +11,12 @@ describe Rmeter::Server do
       files = [ '/foo/file_1.jml', '/foo/file_2.jml' ]
       Dir.stub!(:[]).and_return( files )
 
-      files.each { |f| Rmeter::Parser.should_receive(:new).with(f) }
+      parser_mocks = files.collect do |f|
+        mock_parser = mock(Rmeter::Parser)
+        mock_parser.should_receive(:parse).and_return({})
+        Rmeter::Parser.should_receive(:new).with(f).and_return( mock_parser )
+      end
+
       get '/'
     end
   end
