@@ -12,13 +12,14 @@ module Rmeter
     set :views,  "#{dir}/server/views"
     set :public, "#{dir}/server/public"
     set :static, true
-    set :data, "#{dir}/data"
+    set :data, File.expand_path("#{dir}/../../data")
 
     get "/" do
       files = Dir[File.join(settings.data, '*')]
-      results = files.collect { |f| Rmeter::Parser.new(f).parse.to_json }
+      data = files.collect { |f| Rmeter::Parser.new(f).parse }.flatten
+      results = data.map { |d| [ d[:timestamp].to_i * 1000, d[:time] ] }
 
-      haml :index
+      haml :index, :locals => { :results => results }
     end
   end
 end
