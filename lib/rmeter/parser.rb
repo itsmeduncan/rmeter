@@ -9,7 +9,7 @@ module Rmeter
       'rc' => :response_code,
       'rm' => :response_message,
       'tn' => :thread_name,
-      'b' => :bytes
+      'by' => :bytes
     }
 
     attr_reader :file
@@ -20,13 +20,15 @@ module Rmeter
 
     def parse
       @doc = Nokogiri::XML(File.open(file))
-      @doc.xpath('/testResults/httpSample').collect do |result|
-        result.attribute_nodes.each_with_object({}) do |node, results|
+      @doc.xpath('/testResults/httpSample').collect do |sample|
+        attributes = sample.attribute_nodes.each_with_object({}) do |node, results|
           key = ATTRIBUTE_MAPPING[node.name]
           converter = "convert_#{key}".to_sym
 
           results[key] = respond_to?(converter, true) ? send(converter, node.value) : node.value if key
         end
+
+        attributes.merge!(:url => sample.at_xpath('java.net.URL').text)
       end
     end
 
