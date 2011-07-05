@@ -15,13 +15,9 @@ module Rmeter
     set :data, File.expand_path("#{dir}/../../data")
 
     get "/" do
-      files = Dir[ File.join(settings.data, '*') ]
-      series = files.collect { |f| Rmeter::Parser.new(f).parse }.flatten.group_by { |d| d[:url] }
-      results = series.map do |url, data|
-        { :name => url[0..30], :data => data.map { |d| [ d[:timestamp].to_i * 1000, d[:time] ] } }
-      end
+      aggregate = Rmeter::Aggregator.new( File.join(settings.data, '*') )
 
-      haml :index, :locals => { :results => results }
+      haml :index, :locals => { :series => aggregate.time_by_url }
     end
   end
 end
